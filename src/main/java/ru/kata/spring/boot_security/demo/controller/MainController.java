@@ -9,7 +9,6 @@ import ru.kata.spring.boot_security.demo.services.RoleService;
 import ru.kata.spring.boot_security.demo.services.UserService;
 
 import java.security.Principal;
-import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -72,9 +71,6 @@ public class MainController {
 
     @PostMapping("/admin/edit")
     public String updateUser(@ModelAttribute("user") User user, @RequestParam(required = false) List<Long> roleIds) {
-        if (roleIds == null) {
-            roleIds = new ArrayList<>(); // Если роли не выбраны, используем пустой список
-        }
         userService.updateUser(user, roleIds);
         return "redirect:/admin";
     }

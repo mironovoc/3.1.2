@@ -20,17 +20,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class UserService implements UserDetailsService {
+public class UserServiceImpl implements UserService, UserDetailsService {
 
     private final UserRepository userRepository;
     private final RoleService roleService;
 
     @Autowired
-    public UserService(UserRepository userRepository, RoleService roleService) {
+    public UserServiceImpl(UserRepository userRepository, RoleService roleService) {
         this.userRepository = userRepository;
         this.roleService = roleService;
     }
 
+    @Override
     public User findByUsername(String username) {
         return userRepository.findByUsername(username);
     }
@@ -50,19 +51,21 @@ public class UserService implements UserDetailsService {
         return roles.stream().map(r -> new SimpleGrantedAuthority(r.getName())).collect(Collectors.toList());
     }
 
-
+    @Override
     @Transactional(readOnly = true)
     public List<User> allUsers() {
         return userRepository.findAll();
     }
 
+    @Override
     @Transactional
     public void addUser(User user, List<Long> roleIds) {
         user.setPassword(new BCryptPasswordEncoder().encode(user.getPassword()));
-        user.setRoles(roleIds.stream().map(roleService::findRoleById).collect(Collectors.toList()));
+        user.setRoles(roleIds.stream().map(roleService::findRoleById).collect(Collectors.toSet()));
         userRepository.save(user);
     }
 
+    @Override
     @Transactional
     public void updateUser(User user, List<Long> roleIds) {
         User existingUser = userRepository.findById(user.getId())
@@ -73,19 +76,21 @@ public class UserService implements UserDetailsService {
 
         // Обновляем роли
         if (roleIds != null && !roleIds.isEmpty()) {
-            user.setRoles(roleIds.stream().map(roleService::findRoleById).collect(Collectors.toList()));
+            user.setRoles(roleIds.stream().map(roleService::findRoleById).collect(Collectors.toSet()));
         } else {
-            user.setRoles(Collections.emptyList());
+            user.setRoles(Collections.emptySet());
         }
 
         userRepository.save(user);
     }
 
+    @Override
     @Transactional
     public void deleteUser(User user) {
         userRepository.delete(user);
     }
 
+    @Override
     @Transactional(readOnly = true)
     public User findUserById(Long id) {
         return userRepository.findById(id).orElse(null);
