@@ -74,7 +74,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         user.setUsername(user.getUsername());
         user.setEmail(user.getEmail());
 
-        // Обновляем роли
         if (roleIds != null && !roleIds.isEmpty()) {
             user.setRoles(roleIds.stream().map(roleService::findRoleById).collect(Collectors.toSet()));
         } else {
